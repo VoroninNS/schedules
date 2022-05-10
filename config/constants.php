@@ -20,4 +20,9 @@ return [
         'Суббота'     => 'Saturday',
         'Воскресенье' => 'Sunday'
     ],
+    'SUBJECT_TYPES' => [
+        'laboratory' => 'лабораторные занятия',
+        'seminar' => 'семинар',
+        'lecture' => 'лекция',
+    ]
 ];

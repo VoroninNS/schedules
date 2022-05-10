@@ -5,6 +5,7 @@ namespace App\Services;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\Config;
+use stringEncode\Exception;
 
 class SubjectsParser
 {
@@ -16,31 +17,38 @@ class SubjectsParser
         $this->subjects = $subjects;
     }
 
+    /**
+     * @param string $time
+     * @param string $subgroup
+     * @param string $day
+     * @return array
+     * @throws Exception
+     */
     public function parse(string $time, string $subgroup, string $day): array {
         $response = [];
         foreach ($this->subjects as $subject) {
             if (!$this->isSubjectEnabled($subject, $day)) {
                 continue;
             }
-            if (strpos($subject, 'лабораторные занятия') && !strpos($subject, "($subgroup)")) {
+            if (strpos($subject, Config::get('constants.SUBJECT_TYPES.laboratory'))
+                && !strpos($subject, "($subgroup)")) {
                 continue;
             }
-            $subject = preg_replace('/(\.)([ .\n]+)(\[.*\])/sU', '$1', $subject, 1);
-            $stadium = strpos($subject, self::STADIUM);
-            if (!preg_match('|\d+|', $subject) && !$stadium) {
+            $subject   = preg_replace('/(\.)([ .\n]+)(\[.*\])/sU', '$1', $subject, 1);
+            $isStadium = strpos($subject, self::STADIUM);
+            if (!preg_match('|\d+|', $subject) && !$isStadium) {
                 $subject .= ' онлайн';
             }
-            $response[] = [
-                'start'   => explode('-', $time)[0],
-                'end'     => explode('-', $time)[1],
-                'subject' => $subject
+            $subjectType = $this->getSubjectType($subject);
+            $subject     = str_replace($subjectType, '', $subject);
+            $response[]  = [
+                'start' => explode('-', $time)[0],
+                'end'   => explode('-', $time)[1],
+                'name'  => $subject,
+                'type'  => $subjectType,
             ];
-            if (strpos($subject, 'лабораторные занятия')) {
-                $nextTime   = explode(
-                    '-',
-                    Config::get('constants.TIMES')[array_flip(Config::get('constants.TIMES'))[$time] + 1]
-                );
-                $response[] = ['start' => $nextTime[0], 'end' => $nextTime[1], 'subject' => $subject];
+            if (strpos($subject, Config::get('constants.SUBJECT_TYPES.laboratory'))) {
+                $response = array_merge($response, $this->doubleTimesForLaboratory($subject, $time));
             }
         }
 
@@ -68,6 +76,25 @@ class SubjectsParser
         return false;
     }
 
+    /**
+     * @param string $subject
+     * @return string
+     * @throws Exception
+     */
+    private function getSubjectType(string $subject): string {
+        if (strpos($subject, Config::get('constants.SUBJECT_TYPES.laboratory'))) {
+            return Config::get('constants.SUBJECT_TYPES.laboratory');
+        }
+        if (strpos($subject, Config::get('constants.SUBJECT_TYPES.seminar'))) {
+            return Config::get('constants.SUBJECT_TYPES.seminar');
+        }
+        if (strpos($subject, Config::get('constants.SUBJECT_TYPES.lecture'))) {
+            return Config::get('constants.SUBJECT_TYPES.lecture');
+        }
+
+        throw new Exception('Не известный тип предмета!');
+    }
+
     private function inPeriod($date, $day, $needle): bool {
         $date   = explode('-', $date);
         $period = CarbonPeriod::create(
@@ -88,5 +115,22 @@ class SubjectsParser
         }
 
         return false;
+    }
+
+    private function doubleTimesForLaboratory(string $subject, string $time): array {
+        $response   = [];
+        $laboratory = Config::get('constants.SUBJECT_TYPES.laboratory');
+        $subject    = str_replace($laboratory, '', $subject);
+        $nextTime   = explode(
+            '-',
+            Config::get('constants.TIMES')[array_flip(Config::get('constants.TIMES'))[$time] + 1]
+        );
+        $response[] = [
+            'start' => $nextTime[0],
+            'end'   => $nextTime[1],
+            'name'  => $subject,
+            'type'  => $laboratory,
+        ];
+        return $response;
     }
 }
