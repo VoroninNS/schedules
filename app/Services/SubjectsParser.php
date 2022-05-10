@@ -76,12 +76,12 @@ class SubjectsParser
         )->toArray();
         if ($needle === 'ч.н.') {
             $period = array_filter($period, function ($value, $key) use ($day) {
-                return $value->dayName === Config::get('constants.WEEK')[$day] && !($key & 1);
+                return $value->dayName === Config::get("constants.WEEK.$day") && !($key & 1);
             }, ARRAY_FILTER_USE_BOTH);
         }
-        $string = Config::get('constants.WEEK')[$day] . ' this week';
+        $string = Config::get("constants.WEEK.$day") . ' this week';
         if (Carbon::parse($string)->isPast()) {
-            $string = Config::get('constants.WEEK')[$day] . ' next week';
+            $string = Config::get("constants.WEEK.$day") . ' next week';
         }
         if (in_array(Carbon::parse($string), $period)) {
             return true;
