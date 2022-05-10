@@ -1,8 +1,8 @@
 <?php
 
+use App\Http\Controllers\ScheduleControllers;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Str;
-use Smalot\PdfParser\Parser;
+use RandomState\Camelot\Camelot;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,16 +15,14 @@ use Smalot\PdfParser\Parser;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/get/{group}/{subgroup}/{day}', [ScheduleControllers::class, 'get']);
+Route::get('/all_groups', [ScheduleControllers::class, 'allGroup']);
 
 Route::get('/upload', function () {
-    $parser = new Parser();
-    $pdf = $parser->parseFile('/Users/nikita/PhpstormProjects/schedule/storage/app/public/schedule.pdf');
-    $text = $pdf->getText();
-    $array = explode(']', $text);
-    $array[0] = Str::after($array[0], 'Суб бота');
-    $array = [];
-    return view('upload', compact('array'));
+    $filename = 'ИДБ-18-10';
+    $schedule = Camelot::lattice(public_path("storage/$filename.pdf"))
+                       ->html()
+                       ->extract()[0];
+
+    return view('upload', compact('schedule'));
 });
