@@ -33,22 +33,33 @@ class SubjectsParser
             if (strpos($subject, Config::get('constants.SUBJECT_TYPES.laboratory'))
                 && !strpos($subject, "($subgroup)")) {
                 continue;
+            } else {
+                $subject = str_replace("($subgroup)", '', $subject);
             }
             $subject   = preg_replace('/(\.)([ .\n]+)(\[.*\])/sU', '$1', $subject, 1);
             $isStadium = strpos($subject, self::STADIUM);
             if (!preg_match('|\d+|', $subject) && !$isStadium) {
                 $subject .= ' онлайн';
             }
+
             $subjectType = $this->getSubjectType($subject);
-            $subject     = str_replace($subjectType, '', $subject);
-            $response[]  = [
+            $subject     = str_replace("$subjectType.", '', $subject);
+
+            list($subject, $subjectPlace) = preg_split('/\n /', $subject);
+            $subjectPlace = str_replace('.', '', $subjectPlace);
+
+            $response[] = [
                 'start' => explode('-', $time)[0],
                 'end'   => explode('-', $time)[1],
                 'name'  => $subject,
                 'type'  => $subjectType,
+                'place' => $subjectPlace,
             ];
             if (strpos($subject, Config::get('constants.SUBJECT_TYPES.laboratory'))) {
-                $response = array_merge($response, $this->doubleTimesForLaboratory($subject, $time));
+                $response = array_merge(
+                    $response,
+                    $this->doubleTimesForLaboratory($subject, $subjectPlace, $time)
+                );
             }
         }
 
@@ -117,7 +128,7 @@ class SubjectsParser
         return false;
     }
 
-    private function doubleTimesForLaboratory(string $subject, string $time): array {
+    private function doubleTimesForLaboratory(string $subject, string $subjectPlace, string $time): array {
         $response   = [];
         $laboratory = Config::get('constants.SUBJECT_TYPES.laboratory');
         $subject    = str_replace($laboratory, '', $subject);
@@ -130,6 +141,7 @@ class SubjectsParser
             'end'   => $nextTime[1],
             'name'  => $subject,
             'type'  => $laboratory,
+            'place' => $subjectPlace,
         ];
         return $response;
     }
