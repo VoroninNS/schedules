@@ -5,6 +5,7 @@ namespace App\Services;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 use stringEncode\Exception;
 
 class SubjectsParser
@@ -48,14 +49,15 @@ class SubjectsParser
             list($subject, $subjectPlace) = preg_split('/\n /', $subject);
             $subjectPlace = str_replace('.', '', $subjectPlace);
 
+            $subject    = preg_replace('/\./', '', preg_replace('/\n/', ' ', $subject), 1);
             $response[] = [
                 'start' => explode('-', $time)[0],
                 'end'   => explode('-', $time)[1],
                 'name'  => $subject,
-                'type'  => $subjectType,
+                'type'  => Str::ucfirst($subjectType),
                 'place' => $subjectPlace,
             ];
-            if (strpos($subject, Config::get('constants.SUBJECT_TYPES.laboratory'))) {
+            if ($subjectType == Config::get('constants.SUBJECT_TYPES.laboratory')) {
                 $response = array_merge(
                     $response,
                     $this->doubleTimesForLaboratory($subject, $subjectPlace, $time)
@@ -130,8 +132,6 @@ class SubjectsParser
 
     private function doubleTimesForLaboratory(string $subject, string $subjectPlace, string $time): array {
         $response   = [];
-        $laboratory = Config::get('constants.SUBJECT_TYPES.laboratory');
-        $subject    = str_replace($laboratory, '', $subject);
         $nextTime   = explode(
             '-',
             Config::get('constants.TIMES')[array_flip(Config::get('constants.TIMES'))[$time] + 1]
@@ -140,7 +140,7 @@ class SubjectsParser
             'start' => $nextTime[0],
             'end'   => $nextTime[1],
             'name'  => $subject,
-            'type'  => $laboratory,
+            'type'  => Str::ucfirst(Config::get('constants.SUBJECT_TYPES.laboratory')),
             'place' => $subjectPlace,
         ];
         return $response;
