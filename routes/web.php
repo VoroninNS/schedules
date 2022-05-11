@@ -15,8 +15,9 @@ use RandomState\Camelot\Camelot;
 |
 */
 
+Route::get('/', [ScheduleControllers::class, 'index']);
 Route::get('/get/{group}/{subgroup}/{day}', [ScheduleControllers::class, 'get']);
-Route::get('/all_groups', [ScheduleControllers::class, 'allGroup']);
+Route::get('/all_groups', [ScheduleControllers::class, 'allGroup'])->name('all_groups');
 
 Route::get('/upload', function () {
     $filename = 'ИДБ-18-10';

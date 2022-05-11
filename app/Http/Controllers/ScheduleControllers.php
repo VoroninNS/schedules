@@ -9,6 +9,10 @@ use RandomState\Camelot\Camelot;
 
 class ScheduleControllers extends Controller
 {
+    public function index() {
+        return view('home');
+    }
+
     public function get($group, $subgroup, $day) {
         $schedules   = json_decode(Camelot::lattice(public_path("storage/$group.pdf"))
                                           ->json()
