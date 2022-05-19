@@ -16,5 +16,6 @@ use RandomState\Camelot\Camelot;
 */
 
 Route::get('/', [ScheduleControllers::class, 'index']);
-Route::get('/get/{group}/{subgroup}/{day}', [ScheduleControllers::class, 'get']);
-Route::get('/all_groups', [ScheduleControllers::class, 'allGroup'])->name('all_groups');
+Route::get('byWeek/{group}/{subgroup}', [ScheduleControllers::class, 'byWeek']);
+Route::get('/byDay/{group}/{subgroup}/{day}', [ScheduleControllers::class, 'byDay']);
+Route::get('/all_groups', [ScheduleControllers::class, 'allGroups'])->name('all_groups');

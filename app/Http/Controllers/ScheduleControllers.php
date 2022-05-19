@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Services\DaySchedules;
-use App\Services\SubjectsParser;
 use Illuminate\Support\Facades\Config;
 use RandomState\Camelot\Camelot;
 
@@ -13,44 +12,42 @@ class ScheduleControllers extends Controller
         return view('home');
     }
 
-    public function get($group, $subgroup, $day) {
+    public function byDay($group, $subgroup, $day) {
         $schedules   = json_decode(Camelot::lattice(public_path("storage/$group.pdf"))
                                           ->json()
                                           ->extract()[0]);
-        $daySchedule = (new DaySchedules($schedules))->get($day);
-        if (!$daySchedule) {
-            dd('нет пар');
-        }
-
-        $response = [];
-        foreach (array_flip(Config::get('constants.TIMES')) as $time => $num) {
-            $subjects = $daySchedule[$num + 1];
-            if (!$subjects) {
-                continue;
-            }
-            $subjects = preg_split('@(?<=]\n)@', $subjects);
-            $parser   = new SubjectsParser($subjects);
-            $response = array_merge($response, $parser->parse($time, $subgroup, $day));
-        }
-
+        $daySchedule = (new DaySchedules($schedules))->get($subgroup, $day);
         if (isset($_GET['dump']) && $_GET['dump'] == 'yes') {
-            dd($response);
+            dd($daySchedule);
         }
-        return json_encode($response, JSON_UNESCAPED_UNICODE);
+        return json_encode($daySchedule, JSON_UNESCAPED_UNICODE);
     }
 
+    public function byWeek($group, $subgroup) {
+        $weekSchedules = [];
+        $schedules     = json_decode(Camelot::lattice(public_path("storage/$group.pdf"))
+                                            ->json()
+                                            ->extract()[0]);
+        foreach (Config::get('constants.WEEK') as $day_ru => $day_en) {
+            $weekSchedules[$day_en] = (new DaySchedules($schedules))->get($subgroup, $day_ru);
+        }
+        if (isset($_GET['dump']) && $_GET['dump'] == 'yes') {
+            dd($weekSchedules);
+        }
+        return json_encode($weekSchedules, JSON_UNESCAPED_UNICODE);
+    }
 
-    public function allGroup() {
+    public function allGroups() {
         $schedules = glob(public_path('storage/') . '*.pdf');
-        $response  = [];
+        $allGroups = [];
         foreach ($schedules as $schedule) {
-            $schedule   = (explode('/', $schedule));
-            $response[] = str_replace('.pdf', '', array_pop($schedule));
+            $schedule    = (explode('/', $schedule));
+            $allGroups[] = str_replace('.pdf', '', array_pop($schedule));
         }
 
         if (isset($_GET['dump']) && $_GET['dump'] == 'yes') {
-            dd($response);
+            dd($allGroups);
         }
-        return json_encode($response, JSON_UNESCAPED_UNICODE);
+        return json_encode($allGroups, JSON_UNESCAPED_UNICODE);
     }
 }
