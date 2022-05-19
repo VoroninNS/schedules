@@ -33,7 +33,10 @@ class ScheduleControllers extends Controller
             $response = array_merge($response, $parser->parse($time, $subgroup, $day));
         }
 
-        dd($response);
+        if (isset($_GET['dump']) && $_GET['dump'] == 'yes') {
+            dd($response);
+        }
+        return json_encode($response, JSON_UNESCAPED_UNICODE);
     }
 
 
@@ -44,6 +47,10 @@ class ScheduleControllers extends Controller
             $schedule   = (explode('/', $schedule));
             $response[] = str_replace('.pdf', '', array_pop($schedule));
         }
-        dd($response);
+
+        if (isset($_GET['dump']) && $_GET['dump'] == 'yes') {
+            dd($response);
+        }
+        return json_encode($response, JSON_UNESCAPED_UNICODE);
     }
 }
