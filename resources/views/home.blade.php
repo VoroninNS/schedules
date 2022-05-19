@@ -4,15 +4,15 @@
 <ul>
     <li>
         /byWeek/{group}/{subgroup}
-        - расписание на неделю. <a href="http://schedules.website/byWeek/ИДБ-20-05/А/">Пример запроса</a>
+        - расписание на неделю. <a href="{{route('byWeek', ['ИДБ-20-05', 'А'])}}">Пример запроса</a>
     </li>
     <li>
         /byDay/{group}/{subgroup}/{day}
-        - расписание на день. <a href="http://schedules.website/byDay/ИДБ-20-05/А/Среда">Пример запроса</a>
+        - расписание на день. <a href="{{route('byDay', ['ИДБ-20-05', 'А', 'Среда'])}}">Пример запроса</a>
     </li>
     <li>
         /all_groups
-        - все доступные группы. <a href="http://schedules.website/all_groups">Пример запроса</a>
+        - все доступные группы. <a href="{{route('all_groups')}}">Пример запроса</a>
     </li>
 </ul>
 
