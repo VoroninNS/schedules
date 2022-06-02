@@ -37,7 +37,7 @@ class SubjectsParser
                     && !strpos($subject, "($subgroup)"))) {
                     continue;
                 } else {
-                    $subject = str_replace("($subgroup)", '', $subject);
+                    $subject = str_replace("($subgroup).", '', $subject);
                 }
             }
             $subject   = preg_replace('/(\.)([ .\n]+)(\[.*\])/sU', '$1', $subject, 1);
@@ -49,13 +49,16 @@ class SubjectsParser
             $subjectType = $this->getSubjectType($subject);
             $subject     = str_replace("$subjectType.", '', $subject);
 
-            try {
-                list($subject, $subjectPlace) = preg_split('/(\n )(?!.*\1)/', $subject);
-                $subjectPlace = preg_replace('/\n/', ' ', $subjectPlace);
-            } catch (\ErrorException $e) {
-                list($subject, $subjectPlace) = preg_split('/(\n)(?!.*\1)/', $subject);
+            $pregSubjectPlace = ['/(\n )(?!.*\1)/', '/( )(?!.*\1)/s', '/(\n)(?!.*\1)/', '/   /', '/( \n)(?!.*\1)/'];
+            $subjectPlace     = '';
+            foreach ($pregSubjectPlace as $preg) {
+                $pregResult = preg_split($preg, $subject);
+                if (count($pregResult) == 2 && $pregResult[1]) {
+                    list($subject, $subjectPlace) = [$pregResult[0], $pregResult[1]];
+                    break;
+                }
             }
-            $subjectPlace = str_replace('.', '', $subjectPlace);
+            $subjectPlace = str_replace([' ', '.', "\n"], '', $subjectPlace);
 
             $subject    = preg_replace('/\./', '', preg_replace('/\n/', ' ', $subject), 1);
             $response[] = [
@@ -147,9 +150,9 @@ class SubjectsParser
         $response[] = [
             'start' => $nextTime[0],
             'end'   => $nextTime[1],
-            'name'  => $subject,
+            'name'  => rtrim($subject),
             'type'  => Str::ucfirst(Config::get('constants.SUBJECT_TYPES.laboratory')),
-            'place' => $subjectPlace,
+            'place' => rtrim($subjectPlace),
         ];
         return $response;
     }
