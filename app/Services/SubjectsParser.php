@@ -28,9 +28,10 @@ class SubjectsParser
     public function parse(string $time, ?string $subgroup, string $day): array {
         $response = [];
         foreach ($this->subjects as $subject) {
-            if (!$this->isSubjectEnabled($subject, $day)) {
-                continue;
-            }
+            // костыль: чтобы были видны данные, пока нет пар
+//            if (!$this->isSubjectEnabled($subject, $day)) {
+//                continue;
+//            }
             if ($subgroup) {
                 if ((strpos($subject, Config::get('constants.SUBJECT_TYPES.laboratory'))
                     && !strpos($subject, "($subgroup)"))) {
