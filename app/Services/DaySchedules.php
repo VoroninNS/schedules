@@ -12,7 +12,7 @@ class DaySchedules
         $this->schedules = $schedules;
     }
 
-    public function get(string $subgroup, string $day): array {
+    public function get(?string $subgroup, string $day): array {
         $dayData = [];
         foreach ($this->schedules as $key => $schedule) {
             if ($schedule->{0} === $day) {
@@ -35,7 +35,7 @@ class DaySchedules
         return self::parse($dayData, $subgroup, $day);
     }
 
-    public function parse(array $dayData, string $subgroup, string $day): array {
+    public function parse(array $dayData, ?string $subgroup, string $day): array {
         $daySchedules = [];
         foreach (array_flip(Config::get('constants.TIMES')) as $time => $num) {
             $subjects = $dayData[$num + 1];

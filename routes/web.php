@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\ScheduleControllers;
 use Illuminate\Support\Facades\Route;
-use RandomState\Camelot\Camelot;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,6 +15,15 @@ use RandomState\Camelot\Camelot;
 */
 
 Route::get('/', [ScheduleControllers::class, 'index']);
-Route::get('byWeek/{group}/{subgroup}', [ScheduleControllers::class, 'byWeek'])->name('byWeek');
-Route::get('/byDay/{group}/{subgroup}/{day}', [ScheduleControllers::class, 'byDay'])->name('byDay');
 Route::get('/all_groups', [ScheduleControllers::class, 'allGroups'])->name('all_groups');
+Route::get('/all_teachers', [ScheduleControllers::class, 'allTeachers'])->name('all_teachers');
+
+Route::prefix('student')->group(function () {
+    Route::get('/byWeek/{group}/{subgroup}', [ScheduleControllers::class, 'studentByWeek'])->name('student_byWeek');
+    Route::get('/byDay/{group}/{subgroup}/{day}', [ScheduleControllers::class, 'studentByDay'])->name('student_byDay');
+});
+
+Route::prefix('teacher')->group(function () {
+    Route::get('/byWeek/{teacher}', [ScheduleControllers::class, 'teacherByWeek'])->name('teacher_byWeek');
+    Route::get('/byDay/{teacher}/{day}', [ScheduleControllers::class, 'teacherByDay'])->name('teacher_byDay');
+});

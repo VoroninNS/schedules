@@ -23,6 +23,6 @@ return [
     'SUBJECT_TYPES' => [
         'laboratory' => 'лабораторные занятия',
         'seminar' => 'семинар',
-        'lecture' => 'лекция',
+        'lecture' => 'лекции',
     ]
 ];

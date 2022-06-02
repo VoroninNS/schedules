@@ -20,22 +20,24 @@ class SubjectsParser
 
     /**
      * @param string $time
-     * @param string $subgroup
+     * @param string|null $subgroup
      * @param string $day
      * @return array
      * @throws Exception
      */
-    public function parse(string $time, string $subgroup, string $day): array {
+    public function parse(string $time, ?string $subgroup, string $day): array {
         $response = [];
         foreach ($this->subjects as $subject) {
             if (!$this->isSubjectEnabled($subject, $day)) {
                 continue;
             }
-            if (strpos($subject, Config::get('constants.SUBJECT_TYPES.laboratory'))
-                && !strpos($subject, "($subgroup)")) {
-                continue;
-            } else {
-                $subject = str_replace("($subgroup)", '', $subject);
+            if ($subgroup) {
+                if ((strpos($subject, Config::get('constants.SUBJECT_TYPES.laboratory'))
+                    && !strpos($subject, "($subgroup)"))) {
+                    continue;
+                } else {
+                    $subject = str_replace("($subgroup)", '', $subject);
+                }
             }
             $subject   = preg_replace('/(\.)([ .\n]+)(\[.*\])/sU', '$1', $subject, 1);
             $isStadium = strpos($subject, self::STADIUM);
@@ -46,16 +48,21 @@ class SubjectsParser
             $subjectType = $this->getSubjectType($subject);
             $subject     = str_replace("$subjectType.", '', $subject);
 
-            list($subject, $subjectPlace) = preg_split('/\n /', $subject);
+            try {
+                list($subject, $subjectPlace) = preg_split('/(\n )(?!.*\1)/', $subject);
+                $subjectPlace = preg_replace('/\n/', ' ', $subjectPlace);
+            } catch (\ErrorException $e) {
+                list($subject, $subjectPlace) = preg_split('/(\n)(?!.*\1)/', $subject);
+            }
             $subjectPlace = str_replace('.', '', $subjectPlace);
 
             $subject    = preg_replace('/\./', '', preg_replace('/\n/', ' ', $subject), 1);
             $response[] = [
                 'start' => explode('-', $time)[0],
                 'end'   => explode('-', $time)[1],
-                'name'  => $subject,
+                'name'  => rtrim($subject),
                 'type'  => Str::ucfirst($subjectType),
-                'place' => $subjectPlace,
+                'place' => rtrim($subjectPlace),
             ];
             if ($subjectType == Config::get('constants.SUBJECT_TYPES.laboratory')) {
                 $response = array_merge(
