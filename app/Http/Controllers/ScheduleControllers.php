@@ -16,26 +16,31 @@ class ScheduleControllers extends Controller
     }
 
     public function teacherByDay($teacher, $day) {
-        $schedules   = json_decode(Camelot::lattice(public_path(self::TEACHER_SCHEDULES_PUBLIC_PATH . $teacher . '.pdf'))
-                                          ->json()
-                                          ->extract()[0]);
-        $daySchedule = (new DaySchedules($schedules))->get(null, $day);
-        if (isset($_GET['dump']) && $_GET['dump'] == 'yes') {
-            dd($daySchedule);
-        }
-
+//        $schedules = json_decode(Camelot::lattice(public_path(self::TEACHER_SCHEDULES_PUBLIC_PATH . $teacher . '.pdf'))
+//                                        ->json()
+//                                        ->extract()[0]);
+//
+//        $subject_filter = $_GET['subject_filter'] ?? null;
+//        $daySchedule    = (new DaySchedules($schedules))->get(null, $day, $subject_filter);
+//        if (isset($_GET['dump']) && $_GET['dump'] == 'yes') {
+//            dd($daySchedule);
+//        }
+//
+        $daySchedule = Config::get('constants.TEACHER_BY_DAY_MOCK');
         $response = [
             'success' => true,
             'data'    => $daySchedule,
         ];
-        return json_encode($response, JSON_UNESCAPED_UNICODE);
+
+        return response()->json($response);
     }
 
     public function studentByDay($group, $subgroup, $day) {
-        $schedules   = json_decode(Camelot::lattice(public_path(self::STUDENT_SCHEDULES_PUBLIC_PATH . $group . '.pdf'))
-                                          ->json()
-                                          ->extract()[0]);
-        $daySchedule = (new DaySchedules($schedules))->get($subgroup, $day);
+        $schedules      = json_decode(Camelot::lattice(public_path(self::STUDENT_SCHEDULES_PUBLIC_PATH . $group . '.pdf'))
+                                             ->json()
+                                             ->extract()[0]);
+        $subject_filter = $_GET['subject_filter'] ?? null;
+        $daySchedule    = (new DaySchedules($schedules))->get($subgroup, $day, $subject_filter);
         if (isset($_GET['dump']) && $_GET['dump'] == 'yes') {
             dd($daySchedule);
         }
@@ -44,16 +49,18 @@ class ScheduleControllers extends Controller
             'success' => true,
             'data'    => $daySchedule,
         ];
-        return json_encode($response, JSON_UNESCAPED_UNICODE);
+
+        return response()->json($response);
     }
 
     public function studentByWeek($group, $subgroup) {
-        $weekSchedules = [];
-        $schedules     = json_decode(Camelot::lattice(public_path(self::STUDENT_SCHEDULES_PUBLIC_PATH . $group . '.pdf'))
-                                            ->json()
-                                            ->extract()[0]);
+        $weekSchedules  = [];
+        $subject_filter = $_GET['subject_filter'] ?? null;
+        $schedules      = json_decode(Camelot::lattice(public_path(self::STUDENT_SCHEDULES_PUBLIC_PATH . $group . '.pdf'))
+                                             ->json()
+                                             ->extract()[0]);
         foreach (Config::get('constants.WEEK') as $day_ru => $day_en) {
-            $weekSchedules[$day_en] = (new DaySchedules($schedules))->get($subgroup, $day_ru);
+            $weekSchedules[$day_en] = (new DaySchedules($schedules))->get($subgroup, $day_ru, $subject_filter);
         }
         if (isset($_GET['dump']) && $_GET['dump'] == 'yes') {
             dd($weekSchedules);
@@ -63,26 +70,30 @@ class ScheduleControllers extends Controller
             'success' => true,
             'data'    => $weekSchedules,
         ];
-        return json_encode($response, JSON_UNESCAPED_UNICODE);
+
+        return response()->json($response);
     }
 
     public function teacherByWeek($teacher) {
-        $weekSchedules = [];
-        $schedules     = json_decode(Camelot::lattice(public_path(self::TEACHER_SCHEDULES_PUBLIC_PATH . $teacher . '.pdf'))
-                                            ->json()
-                                            ->extract()[0]);
-        foreach (Config::get('constants.WEEK') as $day_ru => $day_en) {
-            $weekSchedules[$day_en] = (new DaySchedules($schedules))->get(null, $day_ru);
-        }
-        if (isset($_GET['dump']) && $_GET['dump'] == 'yes') {
-            dd($weekSchedules);
-        }
+//        $weekSchedules  = [];
+//        $subject_filter = $_GET['subject_filter'] ?? null;
+//        $schedules      = json_decode(Camelot::lattice(public_path(self::TEACHER_SCHEDULES_PUBLIC_PATH . $teacher . '.pdf'))
+//                                             ->json()
+//                                             ->extract()[0]);
+//        foreach (Config::get('constants.WEEK') as $day_ru => $day_en) {
+//            $weekSchedules[$day_en] = (new DaySchedules($schedules))->get(null, $day_ru, $subject_filter);
+//        }
+//        if (isset($_GET['dump']) && $_GET['dump'] == 'yes') {
+//            dd($weekSchedules);
+//        }
 
+        $weekSchedules = Config::get('constants.TEACHER_BY_WEEK_MOCK');
         $response = [
             'success' => true,
             'data'    => $weekSchedules,
         ];
-        return json_encode($response, JSON_UNESCAPED_UNICODE);
+
+        return response()->json($response);
     }
 
     public function allGroups() {
@@ -96,7 +107,8 @@ class ScheduleControllers extends Controller
             'success' => true,
             'data'    => $allGroups,
         ];
-        return json_encode($response, JSON_UNESCAPED_UNICODE);
+
+        return response()->json($response);
     }
 
     public function allTeachers() {
@@ -110,7 +122,8 @@ class ScheduleControllers extends Controller
             'success' => true,
             'data'    => $allTeachers,
         ];
-        return json_encode($response, JSON_UNESCAPED_UNICODE);
+
+        return response()->json($response);
     }
 
     public function getName(string $schedulesPublicPath): array {
@@ -118,7 +131,7 @@ class ScheduleControllers extends Controller
         $allName   = [];
         foreach ($schedules as $schedule) {
             $schedule  = (explode('/', $schedule));
-            $name = str_replace('.pdf', '', array_pop($schedule));
+            $name      = str_replace('.pdf', '', array_pop($schedule));
             $allName[] = str_replace('_', ' ', $name);
         }
 

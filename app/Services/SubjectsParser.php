@@ -22,16 +22,22 @@ class SubjectsParser
      * @param string $time
      * @param string|null $subgroup
      * @param string $day
+     * @param string|null $subject_filter
      * @return array
      * @throws Exception
      */
-    public function parse(string $time, ?string $subgroup, string $day): array {
+    public function parse(string $time, ?string $subgroup, string $day, ?string $subject_filter = null): array {
         $response = [];
         foreach ($this->subjects as $subject) {
             // костыль: чтобы были видны данные, пока нет пар
 //            if (!$this->isSubjectEnabled($subject, $day)) {
 //                continue;
 //            }
+
+            if ($subject_filter && !strpos($subject, Config::get("constants.SUBJECT_TYPES.$subject_filter"))) {
+                continue;
+            }
+
             if ($subgroup) {
                 if ((strpos($subject, Config::get('constants.SUBJECT_TYPES.laboratory'))
                     && !strpos($subject, "($subgroup)"))) {
