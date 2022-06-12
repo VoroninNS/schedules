@@ -60,7 +60,7 @@ class ScheduleControllers extends Controller
                                              ->json()
                                              ->extract()[0]);
         foreach (Config::get('constants.WEEK') as $day_ru => $day_en) {
-            $weekSchedules[$day_en] = (new DaySchedules($schedules))->get($subgroup, $day_ru, $subject_filter);
+            $weekSchedules[$day_ru] = (new DaySchedules($schedules))->get($subgroup, $day_ru, $subject_filter);
         }
         if (isset($_GET['dump']) && $_GET['dump'] == 'yes') {
             dd($weekSchedules);
